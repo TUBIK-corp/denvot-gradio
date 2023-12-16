@@ -4,7 +4,6 @@ from edge_tts import VoicesManager
 import asyncio, concurrent.futures
 import gradio as gr
 from rvc_infer import rvc_convert
-import json
 
 import hashlib
 from datetime import datetime
@@ -28,9 +27,6 @@ async def speech(mess, pitch, voice):
     communicate = tts.Communicate(mess, voice)
     i = 0
     file_name = "test"
-    while file_name == "test":
-        if "test_" + str(i) + ".wav" not in os.listdir("output"): file_name = "test_" + str(i) + ".wav"
-        i += 1
 
     await communicate.save("input\\" + file_name)
     output_path = rvc_convert(model_path=os.getcwd() + "\\models\\" + model,
