@@ -1,0 +1,7 @@
+output
+__pycache__
+txt.bat
+*.pt
+venv
+
+
