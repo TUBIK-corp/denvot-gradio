@@ -3,5 +3,6 @@ __pycache__
 txt.bat
 *.pt
 venv
+config.py
 
 
