@@ -121,7 +121,7 @@ with gr.Blocks() as grad:
                 quiz = gr.Button()
                 quiz.label = "Задать вопрос"
                 quiz.value = "Задать вопрос"
-            with gr.Column:
+            with gr.Column():
                 gr.Markdown("""
                             # Тут результат
                             DenVot же такой классный!!
