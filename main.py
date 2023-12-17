@@ -4,9 +4,11 @@ from edge_tts import VoicesManager
 import asyncio, concurrent.futures
 import gradio as gr
 from rvc_infer import rvc_convert
-
+import config
 import hashlib
 from datetime import datetime
+from langchain.chat_models.gigachat import GigaChat
+from langchain.schema import HumanMessage, SystemMessage
 
 def date_to_short_hash():
     current_date = datetime.now()
@@ -17,12 +19,14 @@ def date_to_short_hash():
 
 model = "DenVot.pth"
 can_speak = True
-
 voice_instances = []
+chat = GigaChat(credentials=config.API_AUTH, verify_ssl_certs=False, model="GigaChat-Pro")
+
 async def load_voices():
     voicesobj = await VoicesManager.create()
     global voice_instances
     voice_instances = [data["ShortName"] for data in voicesobj.voices]
+
 async def speech(mess, pitch, voice):
     communicate = tts.Communicate(mess, voice)
     i = 0
@@ -30,7 +34,7 @@ async def speech(mess, pitch, voice):
 
     await communicate.save("input\\" + file_name)
     output_path = rvc_convert(model_path=os.getcwd() + "\\models\\" + model,
-                              input_path="E:\\pyProjects\\denvot-gr\\input\\" + file_name,
+                              input_path=os.getcwd() + "\\input\\" + file_name,
                               f0_up_key=pitch)
     os.rename("output\\out.wav", "output\\" + date_to_short_hash() + ".wav")
     os.remove("input\\" + file_name)
@@ -39,13 +43,21 @@ async def speech(mess, pitch, voice):
     can_speak = True
 
 
+messages = list()
+messages.append(SystemMessage(content="Ты милый мальчик по имени Денвот, ты любишь отвечать на вопросы! Не перепутай свою роль!"))
+
+def GigaMessage(request):
+    global messages
+    messages.append(HumanMessage(content=request))
+    response = chat(messages)
+    messages.pop(1)
+    return response
 
 def get_last_file(directory):
     files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
     if not files:
-        return None  # No files in the directory
+        return None
 
-    # Get the most recently created file based on the creation time
     last_file = max(files, key=lambda f: os.path.getctime(os.path.join(directory, f)))
 
     return os.path.join(directory, last_file)
@@ -60,6 +72,17 @@ def makeSpeech(request, pitch, voice):
     result = pool.submit(asyncio.run, speech(request, pitch, voice)).result()
     return get_last_file("output")
 
+def makeSpeechViaAnswer(question, pitch, voice):
+    global can_speak
+    if can_speak is False: return
+    can_speak = False
+    requested = GigaMessage(question).content
+    print(requested)
+    result = pool.submit(asyncio.run, speech(requested, pitch, voice)).result()
+    return get_last_file("output")
+
+
+
 with gr.Blocks() as grad:
     with gr.Row():
         with gr.Column():
@@ -72,6 +95,7 @@ with gr.Blocks() as grad:
             request = gr.TextArea(placeholder="Задай свой текст денвотику!!")
             btn = gr.Button()
             btn.label = "Запуск"
+            btn.value = "Запуск"
             gr.Markdown("""
                 Выберите питч для денвотика!
                 """)
@@ -82,23 +106,25 @@ with gr.Blocks() as grad:
                         DenVot же такой классный!!
                         """)
             out = gr.Audio()
-            gr.ClearButton(out)
+            clear = gr.ClearButton(out)
+            clear.label = "Очистить"
+            clear.value = "Очистить"
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown("""
+                        ### Или же задайте вопрос денвотику
+                        DenVot с радостью ответит на него!
+                        """)
+            question = gr.TextArea(placeholder="Задай свой текст денвотику!!")
+            quiz = gr.Button()
+            quiz.label = "Спросить"
+            quiz.value = "Спросить"
+        gr.Column()
     request.label = "Текст"
     slider.maximum = 24
     slider.minimum = -24
-    slider.value = 12
+    slider.value = 6
     slider.label = "Питч"
     btn.click(makeSpeech, inputs=[request, slider, combobox], outputs=out)
+    quiz.click(makeSpeechViaAnswer, inputs=[question, slider, combobox], outputs=out)
 grad.launch()
-
-class VoiceInfo:
-    def __init__(self, name, short_name, gender, locale, suggested_codec, friendly_name, status, voice_tag, language):
-        self.Name = name
-        self.ShortName = short_name
-        self.Gender = gender
-        self.Locale = locale
-        self.SuggestedCodec = suggested_codec
-        self.FriendlyName = friendly_name
-        self.Status = status
-        self.VoiceTag = voice_tag
-        self.Language = language
