@@ -84,47 +84,58 @@ def makeSpeechViaAnswer(question, pitch, voice):
 
 
 with gr.Blocks() as grad:
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("""
-            # Введите текст для озвучки
-            DenVot с радостью озвучит его!
-            """)
-            print(voice_instances)
-            combobox = gr.Dropdown(voice_instances, label="Голос", info="Список всех доступных голосов", value="ru-RU-DmitryNeural")
-            request = gr.TextArea(placeholder="Задай свой текст денвотику!!")
-            btn = gr.Button()
-            btn.label = "Запуск"
-            btn.value = "Запуск"
-            gr.Markdown("""
-                Выберите питч для денвотика!
+    with gr.Tab("Озвучка текста"):
+        with gr.Row():
+            with gr.Column():
+                gr.Markdown("""
+                # Введите текст для озвучки
+                DenVot с радостью озвучит его!
                 """)
-            slider = gr.Slider()
-        with gr.Column():
-            gr.Markdown("""
-                        # Тут результат
-                        DenVot же такой классный!!
-                        """)
-            out = gr.Audio()
-            clear = gr.ClearButton(out)
-            clear.label = "Очистить"
-            clear.value = "Очистить"
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("""
-                        ### Или же задайте вопрос денвотику
-                        DenVot с радостью ответит на него!
-                        """)
-            question = gr.TextArea(placeholder="Задай свой текст денвотику!!")
-            quiz = gr.Button()
-            quiz.label = "Спросить"
-            quiz.value = "Спросить"
-        gr.Column()
+                print(voice_instances)
+                combobox = gr.Dropdown(voice_instances, label="Голос", info="Список всех доступных голосов", value="ru-RU-DmitryNeural")
+                request = gr.TextArea(placeholder="Напиши текст для озвучки денвотика!!")
+                btn = gr.Button()
+                btn.label = "Запуск"
+                btn.value = "Запуск"
+                gr.Markdown("""
+                    Выберите питч для денвотика!
+                    """)
+                slider = gr.Slider()
+            with gr.Column():
+                gr.Markdown("""
+                            # Тут результат
+                            DenVot же такой классный!!
+                            """)
+                out1 = gr.Audio()
+                clear = gr.ClearButton(out1)
+                clear.label = "Очистить"
+                clear.value = "Очистить"
+    with gr.Tab("Вопросы"):
+        with gr.Row():
+            with gr.Column():
+                gr.Markdown("""
+                            ### Или же задайте вопрос денвотику
+                            DenVot с радостью ответит на него!
+                            """)
+                question = gr.TextArea(placeholder="Задай свой вопрос денвотику!!")
+                quiz = gr.Button()
+                quiz.label = "Задать вопрос"
+                quiz.value = "Задать вопрос"
+            with gr.Column:
+                gr.Markdown("""
+                            # Тут результат
+                            DenVot же такой классный!!
+                            """)
+                out2 = gr.Audio()
+                clear2 = gr.ClearButton(out2)
+                clear2.label = "Очистить"
+                clear2.value = "Очистить"
     request.label = "Текст"
     slider.maximum = 24
     slider.minimum = -24
     slider.value = 6
     slider.label = "Питч"
-    btn.click(makeSpeech, inputs=[request, slider, combobox], outputs=out)
-    quiz.click(makeSpeechViaAnswer, inputs=[question, slider, combobox], outputs=out)
+    question.label = "Вопрос"
+    btn.click(makeSpeech, inputs=[request, slider, combobox], outputs=out1)
+    quiz.click(makeSpeechViaAnswer, inputs=[question, slider, combobox], outputs=out2)
 grad.launch()
