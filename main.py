@@ -121,6 +121,10 @@ with gr.Blocks() as grad:
                 quiz = gr.Button()
                 quiz.label = "Задать вопрос"
                 quiz.value = "Задать вопрос"
+                gr.Markdown("""
+                            Выберите питч для денвотика!
+                            """)
+                slider2 = gr.Slider()
             with gr.Column():
                 gr.Markdown("""
                             # Тут результат
@@ -138,4 +142,5 @@ with gr.Blocks() as grad:
     question.label = "Вопрос"
     btn.click(makeSpeech, inputs=[request, slider, combobox], outputs=out1)
     quiz.click(makeSpeechViaAnswer, inputs=[question, slider, combobox], outputs=out2)
+grad.title = "Голосовой DenVot"
 grad.launch()
