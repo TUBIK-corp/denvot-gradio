@@ -1,3 +1,4 @@
+Текстовая модель: [gigachat](https://github.com/ai-forever/gigachain)
 # Гайд по установке:
 1) Установите [Python 3.10](https://www.python.org/downloads/)
 2) Установите [git](https://git-scm.com/downloads)
